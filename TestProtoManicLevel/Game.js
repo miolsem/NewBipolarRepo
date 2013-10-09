@@ -8,6 +8,8 @@
 
 var c = document.getElementById("canvas");
 var ctx=c.getContext("2d");
+
+var stage = new createjs.Stage(c);
 //ctx.fillStyle="#FF0000";
 //ctx.fillRect(0,0,150,75);
 
