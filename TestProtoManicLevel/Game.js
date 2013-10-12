@@ -78,6 +78,39 @@ var gravcheck = 0;
 var personImg = new Image();
 personImg.src = "person.png";
 var personCounter = 6;
+function brokenPlatform(x,y)
+{
+    this.bpx = x;
+    this.bpy = y;
+    this.frame = 1;
+    this.used = false;
+    this.vel = 0;
+    this.resetVals = function()
+    {
+        this.frame = 1;
+
+        this.vel = 0;
+    }
+    this.updateFall = function()
+    {
+        //fall if in place
+        if(this.used == true)
+        {
+
+            this.vel ++;
+            this.bpy += this.vel + platformGravity;
+        }
+
+        if(this.bpy > 480)
+        {
+            this.used = false;
+            this.bpx = -100;
+            this.bpy = -100;
+
+        }
+    }
+}
+
 function platform(x, y, num)
 {
     this.plx = x;
@@ -97,6 +130,22 @@ function platform(x, y, num)
     }
     this.smash = function(byPlayer)
     {
+        if(bp1.used == false)
+        {
+            bp1.bpx = this.plx;
+            bp1.bpy = this.ply;
+            bp1.used = true;
+            bp1.resetVals();
+        }
+        else if(bp2.used == false)
+        {
+            bp2.bpx = this.plx;
+            bp2.bpy = this.ply;
+            bp2.used = true;
+            bp2.resetVals();
+        }
+
+
 		if(byPlayer)
 		{
 			bgAnimationFrame++;
@@ -205,6 +254,9 @@ var p3 = new platform(600, 410, 3);
 var p4 = new platform(3, 350, 4);
 var p5 = new platform(500, 50, 5);
 
+var bp1 = new brokenPlatform(-100, -100) ;
+var bp2 = new brokenPlatform(-100, -100);
+
 //Create the person
 var person1 = new person(-200, 500, 2);
 
@@ -261,9 +313,13 @@ Game.draw = function()
         ctx.drawImage(platformImg, p3.plx, p3.ply); // draw platform 3
         ctx.drawImage(platformImg, p4.plx, p4.ply); // draw platform 4
         ctx.drawImage(platformImg, p5.plx, p5.ply); // draw platform 5
+
+        ctx.drawImage(platformImg, bp1.bpx, bp1.bpy);
+        ctx.drawImage(platformImg, bp2.bpx, bp2.bpy);
+
         ctx.drawImage(personImg, person1.persx, person1.persy); // draw person1
-		ctx.drawImage(playerImg,0,0,720,480,posX-(329*(144/720)),posY-(94*(96/480)),144,96);
-	//	ctx.drawImage(playerImg,(playerImgFrame%5) * 720,Math.floor(playerImgFrame/5)*480,720,480,posX,posY,72,48);
+	//	ctx.drawImage(playerImg,0,0,720,480,posX-(329*(144/720)),posY-(94*(96/480)),144,96);
+		ctx.drawImage(playerImg,(playerImgFrame%5) * 720,Math.floor(playerImgFrame/5)*480,720,480,posX-(329*(144/720)),posY-(94*(96/480)),144,96);
      //   ctx.drawImage(playerImg,posX,posY);
 	 
 //329,94
@@ -286,7 +342,9 @@ Game.update = function()
 	//398-329 = width
 	//335-94 = height
 	//420 = end of player..
-	//720-420 
+	//720-420
+    bp1.updateFall();
+    bp2.updateFall();
     if(posX + playerSpeed * friction < 720 - playerWidth)
     {
         if(posX + playerSpeed * friction > 0)
@@ -704,5 +762,18 @@ function createArray(length)
     return arr;
 }
 
+function frame()
+{
+    bp1.frame ++;
+    bp2.frame ++;
+    playerImgFrame ++;
+    if(playerImgFrame >= 14)
+    {
+        playerImgFrame = 1;
+    }
+}
+
 Game._intervalId = setInterval(Game.run,1000/Game.fps);
 Game._timerIntervalId = setInterval(Game.timerTick, 1000);
+Game._aniFrame = setInterval(Game.run,1000/24);
+
