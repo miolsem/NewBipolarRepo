@@ -20,7 +20,13 @@ var stage = new createjs.Stage(c);
 //Fractal Background & Reveal
 var backgroundImg = new Image();
 var pixelArray = createArray(720,480);
-backgroundImg.src = "background.png";
+var bgAnimationFrame = 0;
+backgroundImg.src = "Fractal Animation/Fractal_SpriteSheet.png";
+
+//createjs stuff, incase we decide to do this.. personally I could not get it working
+/*var bgAnimation = new createjs.SpriteSheet({images: ["Fractal Animation/Fractal_SpriteSheet.png"], frames: [[0,0,720,481,0,360,239.55],[720,0,720,481,0,360,239.55],[1440,0,720,481,0,360,239.55],[2160,0,720,481,0,360,239.55],[2880,0,720,481,0,360,239.55],[0,481,720,481,0,360,239.55],[720,481,720,481,0,360,239.55],[1440,481,720,481,0,360,239.55],[2160,481,720,481,0,360,239.55],[2880,481,720,481,0,360,239.55],[0,962,720,481,0,360,239.55],[720,962,720,481,0,360,239.55],[1440,962,720,481,0,360,239.55],[2160,962,720,481,0,360,239.55],[2880,962,720,481,0,360,239.55],[0,1443,720,481,0,360,239.55],[720,1443,720,481,0,360,239.55],[1440,1443,720,481,0,360,239.55],[2160,1443,720,481,0,360,239.55],[2880,1443,720,481,0,360,239.55],[0,1924,720,481,0,360,239.55],[720,1924,720,481,0,360,239.55],[1440,1924,720,481,0,360,239.55],[2160,1924,720,481,0,360,239.55],[2880,1924,720,481,0,360,239.55],[0,2405,720,481,0,360,239.55],[720,2405,720,481,0,360,239.55],[1440,2405,720,481,0,360,239.55],[2160,2405,720,481,0,360,239.55],[2880,2405,720,481,0,360,239.55],[0,2886,720,481,0,360,239.55]]});
+var bgSprite = new createjs.Sprite(bgAnimation,1);
+*/
 
 //Timer/Phase Ending
 var endManic = false;
@@ -30,9 +36,15 @@ var cTime = startTime;
 
 //Player
 var playerImg = new Image();
-playerImg.src = "square.png";
-var playerwidth = playerImg.clientWidth;
-var playerheight = playerImg.clientHeight;
+playerImg.src = "Manic_Fly/ManicFly_SpriteSheet.png";
+var playerImgFrame = 0;
+//398-329 = width
+//335-94 = height
+var playerWidth = 69 * (144/720);//(329*(144/720));
+var playerHeight = 241 * (96/480);//(94*(96/480));
+
+var playerwidth = 69;// playerImg.clientWidth;
+var playerheight = 241;//playerImg.clientHeight;
 var posX = 360-32;
 var posY = 240;
 var rightKeyDown = false;
@@ -83,21 +95,30 @@ function platform(x, y, num)
     {
         this.ply = l;
     }
-    this.smash = function()
+    this.smash = function(byPlayer)
     {
+		if(byPlayer)
+		{
+			bgAnimationFrame++;
+			if(bgAnimationFrame > 30)
+			{
+				bgAnimationFrame = 30;
+			}
+		}
+		
         if(this.nullify == false)
         {
-        if(this.plx > 360)
-        {
-        this.setpos((360 * Math.random()), -offset);
-        }
-        else if(this.plx < 360)
-        {
-
-            this.setpos(((360 * (1 + Math.random())) -96), -offset);          //96= width
-        }
-        offset += 80;
-        personCounter--;
+			if(this.plx > 360)
+			{
+				this.setpos((360 * Math.random()), -offset);
+			}
+			else if(this.plx < 360)
+			{
+	
+				this.setpos(((360 * (1 + Math.random())) -96), -offset);          //96= width
+			}
+			offset += 80;
+			personCounter--;
         }
         else
         {
@@ -144,7 +165,7 @@ function platform(x, y, num)
 
                         upSpeed+= jumpStrength * 1.1;
                         velocity = -upSpeed;
-                        this.smash();
+                        this.smash(true);
                     }
                 }
             }
@@ -232,26 +253,21 @@ Game.draw = function()
     else
     {
         ctx.clearRect(0,0,720,480);
-        ctx.drawImage(backgroundImg,0,0);
-        //Cover background image here. This is really inefficient, needs to change later.
-    //    for(var x = 0; x < 720; x+=10)
-      //  {
-       //     for(var y = 0; y < 480; y+=10)
-         //   {
-        //        ctx.clearRect(x,y,10,10);
-        //    }
-      //  }
+		//This is cheating
+        ctx.drawImage(backgroundImg,(bgAnimationFrame%5)*-720,Math.floor(bgAnimationFrame/5)*-481);
+		
         ctx.drawImage(platformImg, p1.plx, p1.ply); // draw platform 1
         ctx.drawImage(platformImg, p2.plx, p2.ply); // draw platform 2
         ctx.drawImage(platformImg, p3.plx, p3.ply); // draw platform 3
         ctx.drawImage(platformImg, p4.plx, p4.ply); // draw platform 4
         ctx.drawImage(platformImg, p5.plx, p5.ply); // draw platform 5
         ctx.drawImage(personImg, person1.persx, person1.persy); // draw person1
-        ctx.drawImage(playerImg,posX,posY);
-
+		ctx.drawImage(playerImg,0,0,720,480,posX-(329*(144/720)),posY-(94*(96/480)),144,96);
+	//	ctx.drawImage(playerImg,(playerImgFrame%5) * 720,Math.floor(playerImgFrame/5)*480,720,480,posX,posY,72,48);
+     //   ctx.drawImage(playerImg,posX,posY);
+	 
+//329,94
         ctx.fillText((cTime).toString(),360 - 15,50);
-
-
     }
 }
 
@@ -266,7 +282,12 @@ Game.update = function()
  //   backgroundImg.putImageData(backgroundImageData,0,0,backgroundImg.width, backgroundImg.height);
 
     //Player movement stuff
-    if(posX + playerSpeed * friction < 720 - playerImg.width)
+//	posX += playerSpeed * friction;
+	//398-329 = width
+	//335-94 = height
+	//420 = end of player..
+	//720-420 
+    if(posX + playerSpeed * friction < 720 - playerWidth)
     {
         if(posX + playerSpeed * friction > 0)
         {
@@ -279,8 +300,9 @@ Game.update = function()
     }
     else
     {
-        posX = 720 - playerImg.width;
+        posX = 720 - playerWidth;
     }
+	
     if(posY >= 480)
     {
         if(gameOver == false)
@@ -426,23 +448,23 @@ Game.update = function()
     p5.collision(posX, posY);
     if(p1.ply > 480)
     {
-        p1.smash();
+        p1.smash(false);
     }
     if(p2.ply > 480)
     {
-        p2.smash();
+        p2.smash(false);
     }
     if(p3.ply > 480)
     {
-        p3.smash();
+        p3.smash(false);
     }
     if(p4.ply > 480)
     {
-        p4.smash();
+        p4.smash(false);
     }
     if(p5.ply > 480)
     {
-        p5.smash();
+        p5.smash(false);
     }
     //Gravity adjusters for platforms, as well as offset adjusters
     if(platformGravity > 0)
