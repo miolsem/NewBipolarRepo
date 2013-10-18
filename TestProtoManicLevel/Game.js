@@ -59,10 +59,13 @@ var tempVel = 0;
 var tempPos = 0;
 var standstill = false;
 var acceleration = gravity/27;
-var jumpStrength = 8.5;
+var jumpStrength = 7.25;
 var friction = 1;
 var gameOver = false;
 
+//Broken Platforms
+var brokenPlatformImg = new Image();
+brokenPlatformImg.src = "Platforms/Fixed_Platform_Break_02.png"  ;
 //Platforms
 var platformGravity = 0;
 var platformImg = new Image();
@@ -76,7 +79,8 @@ var gravcheck = 0;
 
 //Person
 var personImg = new Image();
-personImg.src = "person.png";
+personImg.src = "Platforms/Person 01.png";
+var personframe = 1;
 var personCounter = 6;
 function brokenPlatform(x,y)
 {
@@ -171,7 +175,7 @@ function platform(x, y, num)
         }
         else
         {
-            this.setpos(-96, -32);
+            this.setpos(-200, -200);
         }
         if(person1.broken == 1)
         {
@@ -228,6 +232,7 @@ function person(x,y,num)
     this.persx = x;
     this.persy = y;
     this.speed = 3;
+    this.number = 1;
     this.broken = num;
     this.fall = function()
     {
@@ -308,16 +313,26 @@ Game.draw = function()
 		//This is cheating
         ctx.drawImage(backgroundImg,(bgAnimationFrame%5)*-720,Math.floor(bgAnimationFrame/5)*-481);
 		
-        ctx.drawImage(platformImg, p1.plx, p1.ply); // draw platform 1
-        ctx.drawImage(platformImg, p2.plx, p2.ply); // draw platform 2
-        ctx.drawImage(platformImg, p3.plx, p3.ply); // draw platform 3
-        ctx.drawImage(platformImg, p4.plx, p4.ply); // draw platform 4
-        ctx.drawImage(platformImg, p5.plx, p5.ply); // draw platform 5
+        ctx.drawImage(brokenPlatformImg,0, 0, 190.6, 376, p1.plx, p1.ply, 130,150); // draw platform 1
+        ctx.drawImage(brokenPlatformImg,0, 0, 190.6, 376, p2.plx, p2.ply, 130,150); // draw platform 2
+        ctx.drawImage(brokenPlatformImg,0, 0, 190.6, 376, p3.plx, p3.ply, 130,150); // draw platform 3
+        ctx.drawImage(brokenPlatformImg,0, 0, 190.6, 376, p4.plx, p4.ply, 130,150); // draw platform 4
+        ctx.drawImage(brokenPlatformImg,0, 0, 190.6, 376, p5.plx, p5.ply, 130,150); // draw platform 5
 
-        ctx.drawImage(platformImg, bp1.bpx, bp1.bpy);
-        ctx.drawImage(platformImg, bp2.bpx, bp2.bpy);
+        ctx.drawImage(brokenPlatformImg,(bp1.frame %10)*190.6, Math.floor(bp1.frame / 10)*376,190.6,376, bp1.bpx, bp1.bpy, 130, 150);
+        ctx.drawImage(brokenPlatformImg,(bp2.frame % 10)*190.6, Math.floor(bp2.frame / 10)*376,190.6,376, bp2.bpx, bp2.bpy, 130, 150);
+        bp1.frame ++;
+        bp2.frame ++;
 
-        ctx.drawImage(personImg, person1.persx, person1.persy); // draw person1
+       // ctx.drawImage(personImg, (personframe % 6)*277.8, Math.floor(personframe / 4)*185.5,277.8,185.5, person1.persx, person1.persy, 100, 100)); // draw person1
+        personframe ++;
+        if(personframe > 22)
+        {
+            personframe = 1;
+        }
+
+        //MODIFY PERSON USED DEPENDING ON PERSON.NUMBER
+
 	//	ctx.drawImage(playerImg,0,0,720,480,posX-(329*(144/720)),posY-(94*(96/480)),144,96);
 		ctx.drawImage(playerImg,(playerImgFrame%5) * 720,Math.floor(playerImgFrame/5)*480,720,480,posX-(329*(144/720)),posY-(94*(96/480)),144,96);
      //   ctx.drawImage(playerImg,posX,posY);
@@ -549,6 +564,8 @@ Game.update = function()
         person1.fall();
     }
 
+    /*bp1.frame += .25;
+    bp2.frame += .25;*/
     if(endManic)
     {
         //ends game loop so that depressive phase can take over.
@@ -764,8 +781,7 @@ function createArray(length)
 
 function frame()
 {
-    bp1.frame ++;
-    bp2.frame ++;
+
     playerImgFrame ++;
     if(playerImgFrame >= 14)
     {
